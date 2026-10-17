@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Vista Header Logo (Dark)
+    https://github.com/sanket200511/Project-YT
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="129dp"
+    android:height="48dp"
+    android:viewportWidth="516"
+    android:viewportHeight="192">
+
+    <!-- Vista Logo Sphere -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF6E50"
+        android:strokeWidth="8"
+        android:pathData="M 95, 48 A 48,48 0 1,0 95, 144 A 48,48 0 1,0 95, 48 Z" />
+
+    <!-- Play Icon -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF6E50"
+        android:strokeWidth="8"
+        android:strokeLineJoin="round"
+        android:pathData="M 85, 74 L 115, 96 L 85, 118 Z" />
+
+    <!-- Orbital Ring Back / Full Arc -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF6E50"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:pathData="M 52, 106 C 34, 113 25, 125 30, 133 C 37, 143 64, 138 96, 125 C 128, 112 154, 90 161, 78 C 166, 70 161, 62 147, 59 C 136, 57 124, 60 115, 66" />
+
+    <!-- Orbital Ring Front Arc -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF6E50"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:pathData="M 35, 125 C 64, 135 107, 125 146, 90" />
+
+    <!-- VISTA Wordmark (White) -->
+    <!-- V -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 175, 68 L 205, 136 L 220, 136 L 245, 68 L 230, 68 L 212, 115 L 190, 68 Z" />
+
+    <!-- I -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 255, 68 L 270, 68 L 270, 136 L 255, 136 Z" />
+
+    <!-- S -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 320, 83 C 320, 72 310, 66 295, 66 C 280, 66 270, 73 270, 84 C 270, 93 277, 98 296, 103 C 314, 107 325, 114 325, 125 C 325, 137 312, 144 294, 144 C 274, 144 262, 134 262, 121 L 276, 121 C 277, 129 284, 134 294, 134 C 304, 134 311, 129 311, 123 C 311, 115 304, 111 287, 106 C 270, 101 258, 93 258, 83 C 258, 70 272, 57 294, 57 C 314, 57 328, 69 329, 83 Z" />
+
+    <!-- T -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 334, 68 L 382, 68 L 382, 80 L 364, 80 L 364, 136 L 350, 136 L 350, 80 L 334, 80 Z" />
+
+    <!-- A -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 408, 68 L 434, 136 L 419, 136 L 413, 121 L 391, 121 L 385, 136 L 370, 136 L 396, 68 Z M 402, 90 L 394, 111 L 410, 111 Z" />
+</vector>
