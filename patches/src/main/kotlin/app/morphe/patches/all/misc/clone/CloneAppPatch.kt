@@ -59,7 +59,8 @@ fun setOrGetFallbackPackageName(fallbackPackageName: String): String {
 @Suppress("unused")
 val cloneAppPatch = resourcePatch(
     name = "Clone app",
-    description = "Changes the app package name to allow installing the same app multiple times. By default \".vista\" is appended to the package name. Each cloned install must use a unique package name. Cloning does not work with all apps and using this patch may cause app crashes or other unexpected behavior."
+    description = "Changes the app package name to allow installing the same app multiple times. By default \".vista\" is appended to the package name. Each cloned install must use a unique package name. Cloning does not work with all apps and using this patch may cause app crashes or other unexpected behavior.",
+    default = false
 ) {
     packageNameOption = stringOption(
         key = "packageName",

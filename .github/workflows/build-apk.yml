@@ -52,44 +52,33 @@ jobs:
           echo "Downloading CLI: $CLI_URL"
           curl -L -o morphe-cli.jar "$CLI_URL"
 
-      - name: Obtain Base YouTube APK
-        run: |
-          if [ -n "${{ github.event.inputs.apk_url }}" ]; then
-            echo "Downloading APK from user-provided URL..."
-            curl -L -o youtube.apk "${{ github.event.inputs.apk_url }}"
-          else
-            echo "Fetching YouTube version ${{ github.event.inputs.version }}..."
-            cat << 'EOF' > apps.json
-          {
-            "options": {
-              "arch": "universal",
-              "dpi": "nodpi",
-              "type": "apk",
-              "outDir": "downloads"
-            },
-            "apps": [
-              {
-                "org": "google-inc",
-                "repo": "youtube",
-                "outFile": "youtube",
-                "version": "${{ github.event.inputs.version }}"
-              }
-            ]
-          }
-          EOF
-            npx -y apkmirror-downloader apps.json || true
-            if [ -f downloads/youtube.apk ]; then
-              mv downloads/youtube.apk youtube.apk
-            elif ls downloads/*.apk 1> /dev/null 2>&1; then
-              mv downloads/*.apk youtube.apk
-            else
-              echo "Trying alternative direct source..."
-              curl -L -o youtube.apk "https://github.com/sanket200511/Project-YT/releases/download/v1.47.0-vista/youtube-base.apk" || true
-            fi
-          fi
+      - name: Obtain Base YouTube APK from APKMirror
+        if: ${{ !github.event.inputs.apk_url }}
+        uses: Yakov5776/gh-apkmirror-dl@v1.3
+        with:
+          org: 'google-inc'
+          repo: 'youtube'
+          version: ${{ github.event.inputs.version }}
+          bundle: false
+          filename: 'youtube.apk'
 
+      - name: Obtain Base YouTube APK from User URL
+        if: ${{ github.event.inputs.apk_url }}
+        run: |
+          echo "Downloading base APK from user URL: ${{ github.event.inputs.apk_url }}"
+          curl -L -o youtube.apk "${{ github.event.inputs.apk_url }}"
+
+      - name: Verify Base YouTube APK
+        run: |
           if [ ! -f youtube.apk ] || [ ! -s youtube.apk ]; then
-            echo "Error: Base YouTube APK could not be acquired."
+            echo "Error: youtube.apk was not created."
+            exit 1
+          fi
+          FILE_SIZE=$(wc -c < youtube.apk)
+          echo "Base YouTube APK size: $FILE_SIZE bytes"
+          if [ "$FILE_SIZE" -lt 20000000 ]; then
+            echo "Error: Downloaded APK is smaller than 20MB ($FILE_SIZE bytes). File contents preview:"
+            head -n 20 youtube.apk || true
             exit 1
           fi
 
