@@ -1,0 +1,121 @@
+name: Build Vista APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'YouTube target version'
+        required: true
+        default: '21.20.405'
+      apk_url:
+        description: 'Optional direct download URL for base YouTube APK'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    name: Build Vista APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Vista Patches Bundle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew :patches:buildAndroid --no-daemon
+
+      - name: Download Morphe Patcher CLI
+        run: |
+          CLI_URL=$(curl -sL https://api.github.com/repos/MorpheApp/morphe-desktop/releases/latest | jq -r '.assets[] | select(.name | endswith("-all.jar")) | .browser_download_url')
+          echo "Downloading CLI: $CLI_URL"
+          curl -L -o morphe-cli.jar "$CLI_URL"
+
+      - name: Obtain Base YouTube APK
+        run: |
+          if [ -n "${{ github.event.inputs.apk_url }}" ]; then
+            echo "Downloading APK from user-provided URL..."
+            curl -L -o youtube.apk "${{ github.event.inputs.apk_url }}"
+          else
+            echo "Fetching YouTube version ${{ github.event.inputs.version }}..."
+            cat << 'EOF' > apps.json
+          {
+            "options": {
+              "arch": "universal",
+              "outDir": "downloads"
+            },
+            "apps": [
+              {
+                "org": "google-inc",
+                "repo": "youtube",
+                "outFile": "youtube",
+                "version": "${{ github.event.inputs.version }}"
+              }
+            ]
+          }
+          EOF
+            npx -y apkmirror-downloader apps.json || true
+            if [ -f downloads/youtube.apk ]; then
+              mv downloads/youtube.apk youtube.apk
+            elif ls downloads/*.apk 1> /dev/null 2>&1; then
+              mv downloads/*.apk youtube.apk
+            else
+              echo "Trying alternative direct source..."
+              curl -L -o youtube.apk "https://github.com/sanket200511/Project-YT/releases/download/v1.47.0-vista/youtube-base.apk" || true
+            fi
+          fi
+
+          if [ ! -f youtube.apk ] || [ ! -s youtube.apk ]; then
+            echo "Error: Base YouTube APK could not be acquired."
+            exit 1
+          fi
+
+      - name: Patch APK with Vista
+        run: |
+          PATCH_BUNDLE=$(ls patches/build/libs/patches-*.mpp | head -n 1)
+          echo "Applying patch bundle $PATCH_BUNDLE..."
+          java -jar morphe-cli.jar patch \
+            --patches "$PATCH_BUNDLE" \
+            --output Vista.apk \
+            youtube.apk
+
+      - name: Upload APK as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vista-YouTube-APK
+          path: Vista.apk
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.47.0-vista
+          name: "Vista YouTube v1.47.0"
+          body: |
+            ## 📱 Vista YouTube APK
+            Personalized, ad-free YouTube built with custom **Vista** branding and icons.
+            
+            ### 📥 Installation Steps:
+            1. Download **`Vista.apk`** below to your Android device.
+            2. If you want Google Account sign-in (non-root), install **[MicroG RE](https://github.com/WSTxda/MicroG-RE/releases)**.
+            3. Install `Vista.apk` and enjoy!
+          files: |
+            Vista.apk
+            patches/build/libs/patches-*.mpp
