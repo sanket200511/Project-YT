@@ -68,14 +68,14 @@ val cloneAppPatch = resourcePatch(
         default = ""
     )
 
-    val updatePermissionsOption by booleanOption(
+    val updatePermissionsOption = booleanOption(
         key = "updatePermissions",
         title = "Update permissions",
         description = "Update permissions to match the new package name.",
         default = true
     )
 
-    val updateProvidersOption by booleanOption(
+    val updateProvidersOption = booleanOption(
         key = "updateProviders",
         title = "Update providers",
         description = "Update providers to match the new package name.",
