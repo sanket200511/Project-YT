@@ -63,6 +63,8 @@ jobs:
           {
             "options": {
               "arch": "universal",
+              "dpi": "nodpi",
+              "type": "apk",
               "outDir": "downloads"
             },
             "apps": [

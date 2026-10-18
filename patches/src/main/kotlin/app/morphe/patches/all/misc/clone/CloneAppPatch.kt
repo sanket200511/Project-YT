@@ -56,12 +56,38 @@ fun setOrGetFallbackPackageName(fallbackPackageName: String): String {
     }
 }
 
-    fun getReplacementPackageName(originalPackageName: String) : String {
+@Suppress("unused")
+val cloneAppPatch = resourcePatch(
+    name = "Clone app",
+    description = "Changes the app package name to allow installing the same app multiple times. By default \".vista\" is appended to the package name. Each cloned install must use a unique package name. Cloning does not work with all apps and using this patch may cause app crashes or other unexpected behavior."
+) {
+    packageNameOption = stringOption(
+        key = "packageName",
+        title = "Package name",
+        description = "The package name to use for the app.",
+        default = ""
+    )
+
+    val updatePermissionsOption by booleanOption(
+        key = "updatePermissions",
+        title = "Update permissions",
+        description = "Update permissions to match the new package name.",
+        default = true
+    )
+
+    val updateProvidersOption by booleanOption(
+        key = "updateProviders",
+        title = "Update providers",
+        description = "Update providers to match the new package name.",
+        default = true
+    )
+
+    fun getReplacementPackageName(originalPackageName: String): String {
         val replacementPackageName = packageNameOption.value
-        return if (replacementPackageName != packageNameOption.default) {
-            replacementPackageName!!
+        return if (!replacementPackageName.isNullOrEmpty() && replacementPackageName != packageNameOption.default) {
+            replacementPackageName
         } else {
-            "$originalPackageName.morphe"
+            "$originalPackageName.vista"
         }
     }
 
