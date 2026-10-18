@@ -99,7 +99,8 @@ jobs:
           echo "Applying patch bundle $PATCH_BUNDLE..."
           java -jar morphe-cli.jar patch \
             --patches "$PATCH_BUNDLE" \
-            --output Vista.apk \
+            --out Vista.apk \
+            --force \
             youtube.apk
 
       - name: Upload APK as Workflow Artifact
