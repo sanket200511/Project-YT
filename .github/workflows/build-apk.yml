@@ -58,26 +58,8 @@ jobs:
             echo "Downloading base APK from user URL: ${{ github.event.inputs.apk_url }}"
             curl -L -o youtube.apk "${{ github.event.inputs.apk_url }}"
           else
-            echo "Querying base YouTube APK via Aptoide API..."
-            APK_URL=$(curl -sL "https://ws75.aptoide.com/api/7/app/get/package_name=com.google.android.youtube" | node -e "
-              const chunks = [];
-              process.stdin.on('data', c => chunks.push(c));
-              process.stdin.on('end', () => {
-                try {
-                  const data = JSON.parse(Buffer.concat(chunks).toString());
-                  const url = data.nodes?.meta?.data?.file?.path || '';
-                  console.log(url);
-                } catch (e) {
-                  console.log('');
-                }
-              });
-            ")
-            if [ -z "$APK_URL" ] || [ "$APK_URL" = "null" ]; then
-              echo "Falling back to known stable CDN link..."
-              APK_URL="https://pool.apk.aptoide.com/bjwawesome/com-google-android-youtube-1561304941-77159460-80b8257791e266770ef089e4710bfb77.apk"
-            fi
-            echo "Downloading base YouTube APK from: $APK_URL"
-            curl -L -o youtube.apk "$APK_URL"
+            echo "Downloading verified supported YouTube base APK (v21.39.522)..."
+            curl -L -o youtube.apk "https://pool.apk.aptoide.com/bjwawesome/com-google-android-youtube-1561299900-76845135-d2cadaefeaa82540874ad69450c64e14.apk"
           fi
 
       - name: Verify Base YouTube APK
