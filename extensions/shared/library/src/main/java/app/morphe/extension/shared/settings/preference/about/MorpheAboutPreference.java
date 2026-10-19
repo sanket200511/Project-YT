@@ -98,11 +98,10 @@ public class MorpheAboutPreference extends Preference {
     }
 
     public static void showVancedAsPastContributor(boolean includeVanced) {
-        MorpheCreditsDialog.showVancedAsPastContributor = includeVanced;
+        // No-op
     }
 
-    // Dummy url
-    static final String CREDITS_LINK_PLACEHOLDER_URL = "https://morphe.software/credits/";
+    static final String CREDITS_LINK_PLACEHOLDER_URL = "https://github.com/sanket200511/Project-YT#credits";
 
     static final WebLink CREDITS_LINK = new WebLink("credits", null, CREDITS_LINK_PLACEHOLDER_URL);
 

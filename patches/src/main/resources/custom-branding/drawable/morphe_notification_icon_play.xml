@@ -1,16 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Copyright 2026 Morphe. This is copyrighted content, and not licensed under open source terms.
-    See https://github.com/MorpheApp/morphe-branding
+    Vista Notification Icon
+    Developed by Sanket Kurve (sanket200511)
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="512"
-    android:viewportHeight="512">
+    android:viewportWidth="24"
+    android:viewportHeight="24">
 
-    <!-- Path must be white to ensure the icon appears white in the expanded status bar panel. -->
+    <!-- Planet Sphere -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M334.855,174.926L76,422.681c0,25.61 29.561,41.617 53.209,28.812l100.722,-54.539 104.925,-59.924 83.012,-49.939c11.3,-6.798 18.132,-18.522 18.132,-31.112c0,-12.59 -6.833,-24.314 -18.132,-31.111zM176.972,86.326L129.209,60.463C110.522,50.463 86.723,58.242 78.71,76.968c-0.386,1.206 -0.766,2.414 -1.084,3.656c-0.825,2.552 -1.321,5.187 -1.476,7.85C76.101,88.854 76.043,89.231 76,89.612V422.344c1.482,19.077 13.522,33.208 34.674,33.607c32.374,0 67.217,-47.306 67.217,-66.864V97.312c0,-3.761 -0.337,-7.425 -0.92,-10.986zM436,255.978c0,-12.59 -6.833,-24.314 -18.132,-31.111l-83.013,-49.94C300.383,154.188 265.399,134.208 229.931,115.002L129.209,60.463C104.297,47.273 77.123,65.241 76,89.274l258.855,247.756 83.013,-49.94c11.299,-6.798 18.132,-18.522 18.132,-31.112z"/>
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.2"
+        android:pathData="M 12, 6 A 6,6 0 1,0 12, 18 A 6,6 0 1,0 12, 6 Z" />
+
+    <!-- Play Icon Triangle -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.2"
+        android:strokeLineJoin="round"
+        android:pathData="M 10.8, 9.2 L 14.5, 12 L 10.8, 14.8 Z" />
+
+    <!-- Planetary Orbital Ring (Back Arc) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M 6.6, 13.2 C 4.2, 14.1 3, 15.6 3.6, 16.6 C 4.5, 17.9 7.9, 17.3 12, 15.6 C 16.1, 14 19.4, 11.2 20.3, 9.7 C 21, 8.7 20.3, 7.6 18.5, 7.3 C 17.1, 7 15.6, 7.4 14.5, 8.1" />
+
+    <!-- Planetary Orbital Ring (Front Arc) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M 4.3, 15.6 C 8, 16.9 13.5, 15.6 18.4, 11.2" />
 </vector>
