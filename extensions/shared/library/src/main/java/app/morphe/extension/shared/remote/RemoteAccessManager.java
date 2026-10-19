@@ -130,7 +130,22 @@ public class RemoteAccessManager {
                     return;
                 }
 
-                // 4. Optional Announcement Broadcast
+                // 4. Targeted Device Message (Private broadcast to THIS particular device)
+                if (config.has("device_messages")) {
+                    JSONObject messages = config.optJSONObject("device_messages");
+                    if (messages != null && messages.has(deviceId)) {
+                        JSONObject targetMsg = messages.optJSONObject(deviceId);
+                        if (targetMsg != null) {
+                            String title = targetMsg.optString("title", "Vista Notice");
+                            String message = targetMsg.optString("message", "");
+                            String link = targetMsg.optString("link", "");
+                            showAnnouncementDialog(activity, title, message, link.isEmpty() ? null : link);
+                            return;
+                        }
+                    }
+                }
+
+                // 5. Global Announcement Broadcast
                 if (config.has("announcement")) {
                     JSONObject ann = config.optJSONObject("announcement");
                     if (ann != null && ann.optBoolean("active", false)) {

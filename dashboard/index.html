@@ -952,15 +952,19 @@
       // Merge liveDevices with suspended_devices list
       const suspendedSet = new Set((config.suspended_devices || []).map(id => id.toLowerCase()));
       
+      const msgMap = config.device_messages || {};
+
       const displayMap = new Map();
       liveDevices.forEach(d => {
-        displayMap.set(d.id.toLowerCase(), {
+        const clean = d.id.toLowerCase();
+        displayMap.set(clean, {
           id: d.id,
           model: d.model || "Android Device",
           android: d.android || "Android",
           country: d.country || "Global",
           lastSeen: d.lastSeen,
-          suspended: suspendedSet.has(d.id.toLowerCase())
+          suspended: suspendedSet.has(clean),
+          hasTargetMessage: !!msgMap[clean]
         });
       });
 
@@ -974,7 +978,8 @@
             android: "—",
             country: "—",
             lastSeen: null,
-            suspended: true
+            suspended: true,
+            hasTargetMessage: !!msgMap[cleanId]
           });
         }
       });
@@ -1025,6 +1030,9 @@
               <button class="btn ${dev.suspended ? 'btn-secondary' : 'btn-danger'}" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;" onclick="toggleSuspendDevice('${dev.id}', ${!dev.suspended})">
                 ${dev.suspended ? 'Reactivate' : 'Suspend'}
               </button>
+              <button class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; ${dev.hasTargetMessage ? 'border-color:var(--accent); color:var(--accent);' : ''}" onclick="sendTargetedMessage('${dev.id}')" title="Send a broadcast popup message directly to this user's phone">
+                💬 ${dev.hasTargetMessage ? 'Edit Msg' : 'Message'}
+              </button>
             </div>
           </td>
         `;
@@ -1032,6 +1040,58 @@
       });
 
       document.getElementById('stat-suspended').textContent = suspendedCount;
+    }
+
+    async function sendTargetedMessage(deviceId) {
+      const cleanId = deviceId.trim().toLowerCase();
+      if (!config.device_messages) config.device_messages = {};
+      const current = config.device_messages[cleanId] || {};
+
+      const msg = prompt(`Enter broadcast message for device ${cleanId}:\n(Leave empty to remove existing message)`, current.message || "");
+      if (msg === null) return;
+
+      let title = current.title || "Vista Notice";
+      let link = current.link || "";
+
+      if (msg.trim() !== "") {
+        title = prompt(`Enter popup title for device ${cleanId}:`, title) || "Vista Notice";
+        link = prompt(`Enter optional link/URL (or leave blank):`, link) || "";
+      }
+
+      const workerUrl = getWorkerUrl();
+      const workerKey = getWorkerKey();
+
+      try {
+        const res = await fetch(`${workerUrl}/admin/device/message`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": workerKey
+          },
+          body: JSON.stringify({
+            deviceId: cleanId,
+            title: title,
+            message: msg.trim(),
+            link: link.trim()
+          })
+        });
+
+        if (res.ok) {
+          if (msg.trim() === "") {
+            delete config.device_messages[cleanId];
+            showToast(`Message cleared for ${cleanId}`);
+          } else {
+            config.device_messages[cleanId] = { title, message: msg.trim(), link: link.trim() };
+            showToast(`🚀 Private broadcast sent to ${cleanId}!`);
+          }
+          renderTable();
+          return;
+        }
+      } catch (err) {
+        console.warn("Message update failed:", err);
+      }
+      showToast("Updated locally.");
+      renderTable();
     }
 
     async function toggleSuspendDevice(deviceId, shouldSuspend) {

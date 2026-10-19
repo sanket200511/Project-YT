@@ -11,6 +11,7 @@ const DEFAULT_CONFIG = {
   minimum_supported_version: "1.47.0",
   update_url: "https://github.com/sanket200511/Project-YT/releases/latest",
   suspended_devices: [],
+  device_messages: {},
   ban_message: "Your device access to Vista has been deactivated by the administrator.",
   announcement: {
     active: false,
@@ -202,6 +203,46 @@ export default {
         }
 
         return jsonResponse({ success: true, suspended, deviceId: cleanId, count: list.length });
+      }
+
+      // 6. ADMIN: Send / Clear Targeted Message to a Particular User
+      if (path === "/admin/device/message" && request.method === "POST") {
+        if (!verifyAuth(request, env)) {
+          return jsonResponse({ error: "Unauthorized: Invalid Master Key" }, 401);
+        }
+
+        const { deviceId, title, message, link } = await request.json();
+        const cleanId = (deviceId || "").trim().toLowerCase();
+
+        let config = memoryStore.config;
+        if (env.VISTA_KV) {
+          const raw = await env.VISTA_KV.get("config", { type: "json" });
+          if (raw) config = raw;
+        }
+
+        if (!config.device_messages) config.device_messages = {};
+
+        if (!message || message.trim() === "") {
+          delete config.device_messages[cleanId];
+        } else {
+          config.device_messages[cleanId] = {
+            title: (title || "Vista Notice").trim(),
+            message: message.trim(),
+            link: (link || "").trim()
+          };
+        }
+
+        if (env.VISTA_KV) {
+          await env.VISTA_KV.put("config", JSON.stringify(config));
+        } else {
+          memoryStore.config = config;
+        }
+
+        return jsonResponse({
+          success: true,
+          deviceId: cleanId,
+          activeMessage: config.device_messages[cleanId] || null
+        });
       }
 
       return jsonResponse({ error: "Not Found", message: "Vista Cloudflare Worker Running 24/7" }, 404);
