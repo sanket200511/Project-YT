@@ -33,9 +33,18 @@ import app.morphe.extension.shared.Utils;
 public class RemoteAccessManager {
 
     /**
-     * Default remote config endpoint on GitHub (can be configured or linked to Supabase/Cloudflare Worker).
+     * Cloudflare 24/7 Edge Worker endpoint for remote config & telemetry.
      */
+    public static final String CLOUDFLARE_WORKER_BASE =
+            "https://vista-control.sanket200511.workers.dev";
+
     private static final String REMOTE_CONFIG_URL =
+            CLOUDFLARE_WORKER_BASE + "/config";
+
+    private static final String TELEMETRY_URL =
+            CLOUDFLARE_WORKER_BASE + "/telemetry";
+
+    private static final String GITHUB_BACKUP_URL =
             "https://raw.githubusercontent.com/sanket200511/Project-YT/main/config/remote-control.json";
 
     private static volatile boolean checked = false;
@@ -75,28 +84,18 @@ public class RemoteAccessManager {
             try {
                 if (!Utils.isNetworkConnected()) return;
 
-                URL url = new URL(REMOTE_CONFIG_URL + "?t=" + System.currentTimeMillis());
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setConnectTimeout(6000);
-                conn.setReadTimeout(6000);
-                conn.setRequestMethod("GET");
-                conn.setRequestProperty("User-Agent", "Vista/" + Utils.getAppVersionName());
+                // Send live device telemetry heartbeat to Cloudflare Worker
+                sendTelemetry(activity);
 
-                if (conn.getResponseCode() != 200) {
-                    conn.disconnect();
-                    return;
+                // Fetch remote configuration (worker first, then GitHub backup)
+                String configJson = fetchConfig(REMOTE_CONFIG_URL);
+                if (configJson == null) {
+                    configJson = fetchConfig(GITHUB_BACKUP_URL);
                 }
 
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                reader.close();
-                conn.disconnect();
+                if (configJson == null) return;
 
-                JSONObject config = new JSONObject(response.toString());
+                JSONObject config = new JSONObject(configJson);
 
                 // 1. Check Global App Status
                 boolean globalKillSwitch = config.optBoolean("global_killswitch_active", false);
@@ -146,6 +145,62 @@ public class RemoteAccessManager {
                 Logger.printInfo(() -> "Remote access check completed: " + ex.getMessage());
             }
         });
+    }
+
+    private static String fetchConfig(String endpoint) {
+        try {
+            URL url = new URL(endpoint + "?t=" + System.currentTimeMillis());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(4000);
+            conn.setReadTimeout(4000);
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "Vista/" + Utils.getAppVersionName());
+
+            if (conn.getResponseCode() != 200) {
+                conn.disconnect();
+                return null;
+            }
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+            conn.disconnect();
+            return response.toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static void sendTelemetry(Activity activity) {
+        try {
+            URL url = new URL(TELEMETRY_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(3000);
+            conn.setReadTimeout(3000);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setRequestProperty("User-Agent", "Vista/" + Utils.getAppVersionName());
+            conn.setDoOutput(true);
+
+            JSONObject payload = new JSONObject();
+            payload.put("deviceId", getDeviceId(activity));
+            payload.put("version", Utils.getPatchesReleaseVersion());
+            payload.put("android", Build.VERSION.RELEASE);
+            payload.put("model", Build.MANUFACTURER + " " + Build.MODEL);
+
+            byte[] bytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+            try (java.io.OutputStream os = conn.getOutputStream()) {
+                os.write(bytes, 0, bytes.length);
+            }
+
+            conn.getResponseCode();
+            conn.disconnect();
+        } catch (Exception ignored) {
+        }
     }
 
     private static boolean isVersionOutdated(String current, String required) {

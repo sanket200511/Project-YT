@@ -172,6 +172,17 @@ public class MorpheAboutPreference extends Preference {
             ));
         }
 
+        // Vista Device ID card for remote management
+        try {
+            String deviceId = app.morphe.extension.shared.remote.RemoteAccessManager.getDeviceId(getContext());
+            html.append(String.format("""
+                            <div class="info-card">
+                                <h3>Device Identifier</h3>
+                                <p>%s</p>
+                            </div>
+                            """, deviceId));
+        } catch (Exception ignored) {}
+
         html.append("</div>"); // end .dialog-header
 
         // Links section.

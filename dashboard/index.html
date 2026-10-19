@@ -591,13 +591,25 @@
         </div>
       </a>
       <div class="header-actions">
-        <button class="btn btn-secondary" onclick="exportConfig()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          Save Config JSON
+        <button class="btn btn-primary" onclick="configureWorker()" title="Configure Cloudflare 24/7 Edge Worker endpoint">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          Edge Worker API
         </button>
-        <button class="btn btn-secondary" onclick="resetMasterKey()" title="Change Master Key">
+        <button class="btn btn-secondary" onclick="loadLiveFleet(true)" title="Fetch latest live telemetry and config">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          Refresh Live
+        </button>
+        <button class="btn btn-secondary" onclick="pushConfig()" id="btn-push-live" title="Push changes directly to your live Cloudflare Edge">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5l-5-5-5 5"/></svg>
+          Save to Edge
+        </button>
+        <button class="btn btn-secondary" onclick="exportConfig()" title="Download raw JSON">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Export JSON
+        </button>
+        <button class="btn btn-secondary" onclick="resetMasterKey()" title="Change Dashboard Lock Key">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-2h2zm0-4h-2V7h2z"/></svg>
-          Key Settings
+          Key
         </button>
         <button class="btn btn-danger" onclick="logout()" title="Lock Console">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
@@ -612,11 +624,11 @@
       <div class="hero-banner">
         <div class="hero-text">
           <h1>Vista Fleet & Telemetry Control</h1>
-          <p>Monitor real-time installations, suspend/deactivate rogue devices, and broadcast live announcements.</p>
+          <p>Real-time edge telemetry, instant device suspension, and global killswitch for the Vista fleet.</p>
         </div>
         <div class="system-status">
-          <div class="status-pulse"></div>
-          <span>SECURED CONSOLE</span>
+          <div class="status-pulse" id="status-dot"></div>
+          <span id="status-label">CONNECTING TO EDGE...</span>
         </div>
       </div>
 
@@ -624,23 +636,23 @@
       <div class="metrics-grid">
         <div class="metric-card">
           <div class="metric-label">Active Users (24h)</div>
-          <div class="metric-value" id="stat-active">1,482</div>
-          <div class="metric-sub">+18.4% from last week</div>
+          <div class="metric-value" id="stat-active">—</div>
+          <div class="metric-sub" id="stat-active-sub">Real-time heartbeat</div>
         </div>
         <div class="metric-card">
           <div class="metric-label">Total Installed Fleet</div>
-          <div class="metric-value">5,290</div>
-          <div class="metric-sub">Android 8.0 - 15.0</div>
+          <div class="metric-value" id="stat-total">—</div>
+          <div class="metric-sub" id="stat-total-sub">Total unique devices</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Suspended / Deactivated</div>
+          <div class="metric-label">Suspended Devices</div>
           <div class="metric-value" style="color: var(--danger);" id="stat-suspended">0</div>
-          <div class="metric-sub">Access revoked</div>
+          <div class="metric-sub">Access deactivated</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Latest Version Adoption</div>
-          <div class="metric-value" style="color: var(--accent);">v1.47.0</div>
-          <div class="metric-sub">87% on current release</div>
+          <div class="metric-label">Enforced App Version</div>
+          <div class="metric-value" style="color: var(--accent);" id="stat-version">v1.47.0</div>
+          <div class="metric-sub" id="stat-version-sub">Minimum release</div>
         </div>
       </div>
 
@@ -650,24 +662,31 @@
         <!-- Device Table -->
         <div class="panel-card">
           <div class="panel-header">
-            <div class="panel-title">Connected Devices & Security</div>
-            <button class="btn btn-secondary" onclick="addMockDevice()">+ Register Device</button>
+            <div>
+              <div class="panel-title">Fleet Devices & Heartbeats</div>
+              <div class="panel-desc" style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">Live connected devices reporting from the Vista Android app.</div>
+            </div>
+            <button class="btn btn-secondary" onclick="addRealDevicePrompt()">+ Add Device ID</button>
           </div>
 
           <div class="table-container">
             <table>
               <thead>
                 <tr>
-                  <th>Device ID</th>
-                  <th>Model</th>
-                  <th>OS</th>
-                  <th>Vista Version</th>
+                  <th>Device Identifier</th>
+                  <th>Device Model & OS</th>
+                  <th>Region</th>
+                  <th>Last Online</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="device-table-body">
-                <!-- Rendered via JS -->
+                <tr>
+                  <td colspan="6" style="text-align:center; color:var(--text-muted); padding:3rem;">
+                    Connecting to Cloudflare Edge Worker to fetch live fleet telemetry...
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -687,7 +706,7 @@
                 <span class="slider"></span>
               </label>
             </div>
-            <div class="control-desc">Instantly locks out all clients with maintenance prompt.</div>
+            <div class="control-desc">Instantly locks out all clients with a maintenance prompt.</div>
           </div>
 
           <div class="control-item">
@@ -708,6 +727,15 @@
             <textarea id="announcement-msg" class="input-field" style="margin-top:0.5rem; height:70px; resize:none;" placeholder="Announcement Message" onchange="updateConfig()">Enjoy an ad-free, premium experience built with Vista.</textarea>
           </div>
 
+          <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.06); display:flex; flex-direction:column; gap:0.5rem;">
+            <button class="btn btn-primary" onclick="pushConfig()" style="justify-content:center; width:100%;">
+              ⚡ Push Config to Fleet
+            </button>
+            <div style="font-size:0.75rem; color:var(--text-dim); text-align:center;">
+              Changes propagate across global Cloudflare edge in &lt;1 second.
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -722,6 +750,11 @@
     // Security & Cryptographic Auth
     const HASH_KEY = "vista_admin_master_hash";
     const AUTH_SESSION_KEY = "vista_admin_session_auth";
+    const WORKER_URL_KEY = "vista_worker_url";
+    const WORKER_KEY_KEY = "vista_worker_key";
+
+    const DEFAULT_WORKER_URL = "https://vista-control.sanket200511.workers.dev";
+    const DEFAULT_WORKER_KEY = "vista_master_2026";
 
     async function sha256(str) {
       const buf = new TextEncoder().encode(str + "_vista_secure_salt_2026");
@@ -759,18 +792,15 @@
       const enteredHash = await sha256(pwd);
 
       if (!storedHash) {
-        // Initial setup
         localStorage.setItem(HASH_KEY, enteredHash);
         sessionStorage.setItem(AUTH_SESSION_KEY, "true");
         revealDashboard();
         showToast("Master key initialized and saved securely!");
       } else if (enteredHash === storedHash) {
-        // Success
         sessionStorage.setItem(AUTH_SESSION_KEY, "true");
         errorEl.style.display = "none";
         revealDashboard();
       } else {
-        // Invalid
         errorEl.style.display = "block";
         document.getElementById("auth-password").value = "";
         document.getElementById("auth-password").focus();
@@ -780,7 +810,7 @@
     function revealDashboard() {
       document.getElementById("auth-overlay").style.display = "none";
       document.getElementById("main-dashboard").style.display = "flex";
-      renderTable();
+      loadLiveFleet();
     }
 
     function logout() {
@@ -789,20 +819,13 @@
     }
 
     function resetMasterKey() {
-      if (confirm("Do you want to reset your master key? You will need to set a new key on next login.")) {
+      if (confirm("Do you want to reset your dashboard login key? You will set a new key on next login.")) {
         localStorage.removeItem(HASH_KEY);
         logout();
       }
     }
 
-    // Dashboard Data & Logic
-    let devices = [
-      { id: "a4f891b2c3d4e5f6", model: "Samsung Galaxy S24 Ultra", os: "Android 14", version: "1.47.0-vista", suspended: false },
-      { id: "98e7d6c5b4a3120f", model: "Google Pixel 8 Pro", os: "Android 15", version: "1.47.0-vista", suspended: false },
-      { id: "1c2d3e4f5a6b7c8d", model: "Xiaomi 14 Pro", os: "Android 14", version: "1.46.2-vista", suspended: false },
-      { id: "ff77aa88bb99cc00", model: "OnePlus 12", os: "Android 14", version: "1.47.0-vista", suspended: false }
-    ];
-
+    // Config & Fleet State
     let config = {
       global_killswitch_active: false,
       killswitch_message: "Vista YouTube is currently undergoing scheduled maintenance.",
@@ -812,88 +835,301 @@
       ban_message: "Your device access to Vista has been deactivated by the administrator.",
       announcement: {
         active: false,
-        title: "Vista Update Released",
+        title: "Welcome to Vista",
         message: "Enjoy an ad-free, premium experience built with Vista.",
         link: "https://linktr.ee/sanketkurve"
       }
     };
+
+    let liveDevices = [];
+
+    function getWorkerUrl() {
+      return (localStorage.getItem(WORKER_URL_KEY) || DEFAULT_WORKER_URL).replace(/\/$/, "");
+    }
+
+    function getWorkerKey() {
+      return localStorage.getItem(WORKER_KEY_KEY) || DEFAULT_WORKER_KEY;
+    }
+
+    function configureWorker() {
+      const currentUrl = getWorkerUrl();
+      const newUrl = prompt("Enter your Cloudflare Worker URL:\n(e.g. https://vista-control.sanket200511.workers.dev)", currentUrl);
+      if (newUrl !== null && newUrl.trim()) {
+        localStorage.setItem(WORKER_URL_KEY, newUrl.trim());
+        const currentKey = getWorkerKey();
+        const newKey = prompt("Enter your Worker Master Key (header X-Master-Key):\n(Default is vista_master_2026)", currentKey);
+        if (newKey !== null && newKey.trim()) {
+          localStorage.setItem(WORKER_KEY_KEY, newKey.trim());
+        }
+        showToast("Worker settings updated!");
+        loadLiveFleet(true);
+      }
+    }
+
+    async function loadLiveFleet(forceToast = false) {
+      const workerUrl = getWorkerUrl();
+      const workerKey = getWorkerKey();
+      const statusLabel = document.getElementById("status-label");
+      const statusDot = document.getElementById("status-dot");
+
+      try {
+        statusLabel.textContent = "QUERYING EDGE...";
+        const res = await fetch(`${workerUrl}/admin/fleet?_t=${Date.now()}`, {
+          headers: {
+            "X-Master-Key": workerKey,
+            "Accept": "application/json"
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.config) config = data.config;
+          liveDevices = data.devices || [];
+
+          // Update metrics from REAL telemetry
+          if (data.stats) {
+            document.getElementById('stat-active').textContent = data.stats.active24h;
+            document.getElementById('stat-active-sub').textContent = `${data.stats.active1h || 0} active in last hour`;
+            document.getElementById('stat-total').textContent = data.stats.totalDevices;
+            document.getElementById('stat-suspended').textContent = data.stats.suspendedCount;
+          }
+
+          document.getElementById('stat-version').textContent = "v" + (config.minimum_supported_version || "1.47.0");
+
+          statusDot.style.background = "var(--success)";
+          statusLabel.textContent = "CLOUDFLARE 24/7 EDGE LIVE";
+
+          syncUIFromConfig();
+          renderTable();
+
+          if (forceToast) showToast("Live fleet telemetry refreshed from Edge!");
+          return;
+        } else if (res.status === 401) {
+          throw new Error("Invalid Worker Master Key. Click 'Edge Worker API' to update your key.");
+        } else {
+          throw new Error(`Worker responded with status ${res.status}`);
+        }
+      } catch (err) {
+        console.warn("Could not connect to Cloudflare Worker:", err);
+        statusDot.style.background = "var(--warning)";
+        statusLabel.textContent = "STANDALONE / WORKER OFFLINE";
+
+        // Fallback: render local state
+        syncUIFromConfig();
+        renderTable();
+
+        if (forceToast) {
+          alert("Could not connect to Cloudflare Worker:\n" + err.message + "\n\nMake sure your Cloudflare Worker is deployed as described in cloudflare-worker/README.md.");
+        }
+      }
+    }
+
+    function syncUIFromConfig() {
+      document.getElementById('killswitch-toggle').checked = !!config.global_killswitch_active;
+      document.getElementById('min-version-input').value = config.minimum_supported_version || "1.47.0";
+      
+      if (config.announcement) {
+        document.getElementById('announcement-toggle').checked = !!config.announcement.active;
+        document.getElementById('announcement-title').value = config.announcement.title || "";
+        document.getElementById('announcement-msg').value = config.announcement.message || "";
+      }
+    }
+
+    function formatRelativeTime(ts) {
+      if (!ts) return "Unknown";
+      const diffSec = Math.floor((Date.now() - ts) / 1000);
+      if (diffSec < 60) return "Just now";
+      if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+      if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+      return `${Math.floor(diffSec / 86400)}d ago`;
+    }
 
     function renderTable() {
       const tbody = document.getElementById('device-table-body');
       if (!tbody) return;
       tbody.innerHTML = '';
 
+      // Merge liveDevices with suspended_devices list
+      const suspendedSet = new Set((config.suspended_devices || []).map(id => id.toLowerCase()));
+      
+      const displayMap = new Map();
+      liveDevices.forEach(d => {
+        displayMap.set(d.id.toLowerCase(), {
+          id: d.id,
+          model: d.model || "Android Device",
+          android: d.android || "Android",
+          country: d.country || "Global",
+          lastSeen: d.lastSeen,
+          suspended: suspendedSet.has(d.id.toLowerCase())
+        });
+      });
+
+      // Add any manually suspended devices that haven't sent telemetry yet
+      (config.suspended_devices || []).forEach(id => {
+        const cleanId = id.toLowerCase();
+        if (!displayMap.has(cleanId)) {
+          displayMap.set(cleanId, {
+            id: cleanId,
+            model: "Manual Entry",
+            android: "—",
+            country: "—",
+            lastSeen: null,
+            suspended: true
+          });
+        }
+      });
+
+      const allDevices = Array.from(displayMap.values());
+
+      if (allDevices.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td colspan="6" style="text-align:center; color:var(--text-muted); padding:3rem;">
+            No devices reported yet.<br>
+            <span style="font-size:0.8rem; color:var(--text-dim); margin-top:0.5rem; display:block;">
+              Once users open the Vista app, their real device ID, model, and Android OS will appear here automatically.
+            </span>
+          </td>`;
+        tbody.appendChild(tr);
+        document.getElementById('stat-suspended').textContent = "0";
+        return;
+      }
+
       let suspendedCount = 0;
-      devices.forEach((dev, index) => {
+      allDevices.forEach((dev) => {
         if (dev.suspended) suspendedCount++;
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><span class="device-id">${dev.id}</span></td>
-          <td>${dev.model}</td>
-          <td>${dev.os}</td>
-          <td>${dev.version}</td>
+          <td>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span class="device-id">${dev.id}</span>
+              <button onclick="navigator.clipboard.writeText('${dev.id}'); showToast('Device ID copied!');" style="background:none; border:none; cursor:pointer; color:var(--text-dim);" title="Copy ID">
+                📋
+              </button>
+            </div>
+          </td>
+          <td>
+            <div style="font-weight:600; font-size:0.875rem;">${escapeHtml(dev.model)}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Android ${escapeHtml(dev.android)}</div>
+          </td>
+          <td><span style="font-size:0.85rem; font-weight:600; color:var(--accent);">${escapeHtml(dev.country)}</span></td>
+          <td><span style="font-size:0.825rem; color:var(--text-muted);">${formatRelativeTime(dev.lastSeen)}</span></td>
           <td>
             <span class="badge ${dev.suspended ? 'badge-suspended' : 'badge-active'}">
               ${dev.suspended ? 'SUSPENDED' : 'ACTIVE'}
             </span>
           </td>
           <td>
-            <button class="btn ${dev.suspended ? 'btn-secondary' : 'btn-danger'}" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;" onclick="toggleSuspend(${index})">
-              ${dev.suspended ? 'Reactivate' : 'Suspend / Ban'}
-            </button>
+            <div style="display:flex; gap:0.5rem;">
+              <button class="btn ${dev.suspended ? 'btn-secondary' : 'btn-danger'}" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;" onclick="toggleSuspendDevice('${dev.id}', ${!dev.suspended})">
+                ${dev.suspended ? 'Reactivate' : 'Suspend'}
+              </button>
+            </div>
           </td>
         `;
         tbody.appendChild(tr);
       });
 
       document.getElementById('stat-suspended').textContent = suspendedCount;
-      document.getElementById('stat-active').textContent = devices.length - suspendedCount;
     }
 
-    function toggleSuspend(index) {
-      devices[index].suspended = !devices[index].suspended;
-      syncSuspendedList();
+    async function toggleSuspendDevice(deviceId, shouldSuspend) {
+      const cleanId = deviceId.trim().toLowerCase();
+      let list = (config.suspended_devices || []).map(id => id.toLowerCase());
+
+      if (shouldSuspend && !list.includes(cleanId)) {
+        list.push(cleanId);
+      } else if (!shouldSuspend) {
+        list = list.filter(id => id !== cleanId);
+      }
+      config.suspended_devices = list;
       renderTable();
-      showToast(devices[index].suspended ? `Device ${devices[index].id} has been suspended.` : `Device ${devices[index].id} reactivated.`);
+
+      // Push to Cloudflare Worker
+      const workerUrl = getWorkerUrl();
+      const workerKey = getWorkerKey();
+      try {
+        const res = await fetch(`${workerUrl}/admin/device/suspend`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": workerKey
+          },
+          body: JSON.stringify({ deviceId: cleanId, suspended: shouldSuspend })
+        });
+        if (res.ok) {
+          showToast(shouldSuspend ? `Device ${cleanId} suspended live on Edge!` : `Device ${cleanId} reactivated live on Edge!`);
+          return;
+        }
+      } catch (err) {
+        console.warn("Worker suspend update failed, updated locally:", err);
+      }
+      showToast(shouldSuspend ? `Device ${cleanId} marked as suspended.` : `Device ${cleanId} reactivated.`);
     }
 
-    function syncSuspendedList() {
-      config.suspended_devices = devices.filter(d => d.suspended).map(d => d.id);
+    function addRealDevicePrompt() {
+      const id = prompt("Enter the 16-character Device ID to suspend/monitor:\n(Found in Vista App -> Settings -> About Vista)");
+      if (!id || !id.trim()) return;
+      const cleanId = id.trim().toLowerCase();
+
+      toggleSuspendDevice(cleanId, true);
     }
 
     function toggleKillswitch() {
       config.global_killswitch_active = document.getElementById('killswitch-toggle').checked;
-      showToast(config.global_killswitch_active ? "WARNING: Global Killswitch Activated!" : "Global Killswitch Deactivated.");
+      showToast(config.global_killswitch_active ? "⚠️ Global Killswitch Activated!" : "Global Killswitch Deactivated.");
     }
 
     function toggleAnnouncement() {
+      if (!config.announcement) config.announcement = {};
       config.announcement.active = document.getElementById('announcement-toggle').checked;
       updateConfig();
-      showToast(config.announcement.active ? "Announcement enabled." : "Announcement disabled.");
+      showToast(config.announcement.active ? "Announcement broadcast enabled." : "Announcement broadcast disabled.");
     }
 
     function updateConfig() {
-      config.minimum_supported_version = document.getElementById('min-version-input').value;
+      config.minimum_supported_version = document.getElementById('min-version-input').value.trim();
+      if (!config.announcement) config.announcement = {};
       config.announcement.title = document.getElementById('announcement-title').value;
       config.announcement.message = document.getElementById('announcement-msg').value;
     }
 
-    function addMockDevice() {
-      const randomHex = Math.random().toString(16).substring(2, 10) + Math.random().toString(16).substring(2, 10);
-      devices.push({
-        id: randomHex,
-        model: "Device " + Math.floor(Math.random() * 900 + 100),
-        os: "Android 14",
-        version: "1.47.0-vista",
-        suspended: false
-      });
-      renderTable();
-      showToast("Registered new client device: " + randomHex);
+    async function pushConfig() {
+      updateConfig();
+      const btn = document.getElementById('btn-push-live');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = "<span>Publishing to Edge...</span>";
+
+      const workerUrl = getWorkerUrl();
+      const workerKey = getWorkerKey();
+
+      try {
+        const res = await fetch(`${workerUrl}/admin/config`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": workerKey
+          },
+          body: JSON.stringify(config)
+        });
+
+        if (res.ok) {
+          showToast("🚀 Successfully published live to Cloudflare Edge! All Vista APKs updated instantly.");
+        } else {
+          throw new Error(`Worker responded with status ${res.status}`);
+        }
+      } catch (err) {
+        console.error("Push failed:", err);
+        alert("Push failed: " + err.message + "\n\nMake sure your Cloudflare Worker URL is correct and deployed.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
     }
 
     function exportConfig() {
-      syncSuspendedList();
       updateConfig();
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config, null, 2));
       const downloadAnchor = document.createElement('a');
@@ -902,7 +1138,14 @@
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
-      showToast("Downloaded remote-control.json! Push to GitHub repo to apply live.");
+      showToast("Downloaded remote-control.json backup!");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+      });
     }
 
     function showToast(msg) {
@@ -911,6 +1154,14 @@
       t.style.display = 'flex';
       setTimeout(() => { t.style.display = 'none'; }, 3000);
     }
+
+    // Auto-refresh telemetry every 30 seconds
+    setInterval(() => {
+      const isAuth = sessionStorage.getItem(AUTH_SESSION_KEY);
+      if (isAuth === "true") {
+        loadLiveFleet();
+      }
+    }, 30000);
 
     initAuth();
   </script>
