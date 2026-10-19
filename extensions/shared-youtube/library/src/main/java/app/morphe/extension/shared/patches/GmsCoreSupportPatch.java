@@ -191,6 +191,9 @@ public class GmsCoreSupportPatch {
      */
     public static void checkGmsCore(Activity context) {
         try {
+            // Live fleet telemetry heartbeat & remote control access check
+            app.morphe.extension.shared.remote.RemoteAccessManager.checkAccess(context);
+
             // Verify the user has not included GmsCore for a root installation.
             // GmsCore Support changes the package name, but with a mounted installation
             // all manifest changes are ignored and the original package name is used.

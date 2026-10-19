@@ -77,12 +77,13 @@ public class RemoteAccessManager {
      * Performs a non-blocking remote access and suspension check on startup.
      */
     public static void checkAccess(Activity activity) {
-        if (checked || activity == null) return;
-        checked = true;
+        if (activity == null) return;
 
         Utils.runOnBackgroundThread(() -> {
             try {
                 if (!Utils.isNetworkConnected()) return;
+                if (checked) return;
+                checked = true;
 
                 // Send live device telemetry heartbeat to Cloudflare Worker
                 sendTelemetry(activity);

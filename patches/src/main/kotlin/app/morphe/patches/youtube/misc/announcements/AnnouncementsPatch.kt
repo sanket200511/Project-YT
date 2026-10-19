@@ -12,8 +12,7 @@ private const val EXTENSION_CLASS =
     "Lapp/morphe/extension/youtube/patches/announcements/AnnouncementsPatch;"
 
 val announcementsPatch = bytecodePatch(
-    // FIXME: Change this to an "Update is available" patch
-    //name = "Announcements",
+    name = "Announcements",
     description = "Adds an option to show announcements from Morphe on app startup.",
 ) {
     dependsOn(
