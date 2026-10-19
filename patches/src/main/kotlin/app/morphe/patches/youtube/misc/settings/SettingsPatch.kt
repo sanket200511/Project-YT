@@ -301,7 +301,7 @@ val settingsPatch = bytecodePatch(
                         key = "morphe_playback_in_feeds",
                         tag = "app.morphe.extension.youtube.settings.preference.PlaybackInFeedsListPreference"
                     ),
-                    SwitchPreference("morphe_custom_speed_menu", summary = true),
+                    SwitchPreference("morphe_custom_speed_menu"),
                     SwitchPreference("morphe_remember_playback_speed_last_selected", summary = true)
                 )
             ),
@@ -316,8 +316,8 @@ val settingsPatch = bytecodePatch(
                         tag = "app.morphe.extension.shared.settings.preference.ExternalDownloaderPreference"
                     ),
                     SwitchPreference("morphe_copy_video_link_button", summary = true),
-                    SwitchPreference("morphe_loop_video_button", summary = true),
-                    SwitchPreference("morphe_pip_button_overlay", summary = true)
+                    SwitchPreference("morphe_loop_video_button"),
+                    SwitchPreference("morphe_pip_button_overlay")
                 )
             ),
             PreferenceCategory(
@@ -341,8 +341,8 @@ val settingsPatch = bytecodePatch(
                 titleKey = "morphe_sanket_pref_cat_smart_title",
                 sorting = Sorting.UNSORTED,
                 preferences = setOf(
-                    SwitchPreference("morphe_sb_enabled", summary = true),
-                    SwitchPreference("morphe_ryd_enabled", summary = true)
+                    SwitchPreference("morphe_sb_enabled"),
+                    SwitchPreference("morphe_ryd_enabled")
                 )
             )
         )
