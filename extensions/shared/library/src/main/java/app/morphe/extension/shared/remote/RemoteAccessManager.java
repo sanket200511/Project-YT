@@ -36,7 +36,7 @@ public class RemoteAccessManager {
      * Cloudflare 24/7 Edge Worker endpoint for remote config & telemetry.
      */
     public static final String CLOUDFLARE_WORKER_BASE =
-            "https://vista-control.sanket200511.workers.dev";
+            "https://vista-control.sanketkurve-2005.workers.dev";
 
     private static final String REMOTE_CONFIG_URL =
             CLOUDFLARE_WORKER_BASE + "/config";
