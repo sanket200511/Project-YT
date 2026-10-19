@@ -86,11 +86,18 @@ jobs:
             --force \
             youtube.apk
 
+      - name: Prepare Vista Services APK
+        run: |
+          echo "Downloading latest MicroG as Vista-Services.apk..."
+          curl -L -o Vista-Services.apk "https://github.com/MorpheApp/MicroG-RE/releases/download/7.2.1/microg-7.2.1.apk"
+
       - name: Upload APK as Workflow Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Vista-YouTube-APK
-          path: Vista.apk
+          path: |
+            Vista.apk
+            Vista-Services.apk
 
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
@@ -98,13 +105,14 @@ jobs:
           tag_name: v1.47.0-vista
           name: "Vista YouTube v1.47.0"
           body: |
-            ## 📱 Vista YouTube APK
-            Personalized, ad-free YouTube built with custom **Vista** branding and icons.
+            ## 📱 Vista YouTube & Vista Services
+            Personalized, ad-free YouTube built with custom **Vista** branding and icons by Sanket Kurve.
             
             ### 📥 Installation Steps:
-            1. Download **`Vista.apk`** below to your Android device.
-            2. If you want Google Account sign-in (non-root), install **[MicroG RE](https://github.com/WSTxda/MicroG-RE/releases)**.
-            3. Install `Vista.apk` and enjoy!
+            1. Download and install **`Vista-Services.apk`** below (required for Google Account sign-in).
+            2. Download and install **`Vista.apk`**.
+            3. Open Vista and enjoy an ad-free experience!
           files: |
             Vista.apk
+            Vista-Services.apk
             patches/build/libs/patches-*.mpp
