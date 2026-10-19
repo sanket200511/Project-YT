@@ -24,7 +24,6 @@ import app.morphe.patches.all.misc.resources.addAppResources
 import app.morphe.patches.all.misc.resources.addResourcesPatch
 import app.morphe.patches.all.misc.resources.localesYouTube
 import app.morphe.patches.all.misc.resources.setAddResourceLocale
-import app.morphe.patches.youtube.misc.announcements.announcementsPatch
 import app.morphe.patches.shared.BoldIconsFeatureFlagFingerprint
 import app.morphe.patches.shared.GoogleApiActivityOnCreateFingerprint
 import app.morphe.patches.shared.layout.branding.addLicensePatch
@@ -238,8 +237,7 @@ val settingsPatch = bytecodePatch(
         ),
         initializationPatch(
             extensionPatch = sharedExtensionPatch
-        ),
-        announcementsPatch
+        )
     )
 
     execute {

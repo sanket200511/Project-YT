@@ -99,10 +99,6 @@ public class SplashAnimationPatch {
      * @return If a branded animation was played, and the original one should not be.
      */
     public static boolean setBrandedSplashAnimation(LottieAnimationView view) {
-        if (view != null && view.getContext() instanceof Activity) {
-            app.morphe.extension.shared.remote.RemoteAccessManager.checkAccess((Activity) view.getContext());
-        }
-
         final int animation = CustomBrandingPatch.getStartupAnimation();
         if (animation == 0) {
             return false;
