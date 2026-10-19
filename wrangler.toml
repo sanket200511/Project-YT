@@ -1,0 +1,6 @@
+name = "vista-control"
+main = "cloudflare-worker/worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+MASTER_KEY = "vista_master_2026"
