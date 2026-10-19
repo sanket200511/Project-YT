@@ -1,0 +1,14 @@
+{
+  "global_killswitch_active": false,
+  "killswitch_message": "Vista YouTube is currently undergoing scheduled maintenance. Please try again shortly.",
+  "minimum_supported_version": "1.47.0",
+  "update_url": "https://github.com/sanket200511/Project-YT/releases/latest",
+  "suspended_devices": [],
+  "ban_message": "Your device access to Vista has been deactivated by the administrator.",
+  "announcement": {
+    "active": false,
+    "title": "Welcome to Vista",
+    "message": "Enjoy an ad-free, premium experience built with Vista.",
+    "link": "https://linktr.ee/sanketkurve"
+  }
+}

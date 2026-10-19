@@ -69,6 +69,8 @@ public final class AnnouncementsPatch {
     }
 
     public static void showAnnouncement(final Activity context) {
+        app.morphe.extension.shared.remote.RemoteAccessManager.checkAccess(context);
+
         if (!Settings.ANNOUNCEMENTS.get()) return;
 
         // Check if there is internet connection

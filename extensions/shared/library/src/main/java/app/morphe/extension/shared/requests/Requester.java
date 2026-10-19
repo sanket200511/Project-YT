@@ -87,7 +87,7 @@ public class Requester {
         connection.setFixedLengthStreamingMode(0);
         connection.setRequestMethod(route.getMethod().name());
         String agentString = System.getProperty("http.agent")
-                + "; Morphe/" + Utils.getAppVersionName()
+                + "; Vista/" + Utils.getAppVersionName()
                 + " (" + Utils.getPatchesReleaseVersion() + ")";
         connection.setRequestProperty("User-Agent", agentString);
 
