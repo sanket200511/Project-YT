@@ -83,6 +83,9 @@ import app.morphe.extension.youtube.videoplayer.PlayAllButton.PlaylistIDPrefix;
 import app.morphe.extension.youtube.videoplayer.PlayerIcons;
 
 public class Settings extends SharedYouTubeSettings {
+    // Mode Switch: Sanket's Preferences vs Advanced
+    public static final BooleanSetting ADVANCED_SETTINGS_MODE = new BooleanSetting("vista_advanced_settings_mode", FALSE);
+
     // Video
     public static final EnumSetting<PlaybackBufferSize> PLAYBACK_BUFFER_SIZE = new EnumSetting<>(
             "morphe_playback_buffer_size", PlaybackBufferSize.DEFAULT, true);

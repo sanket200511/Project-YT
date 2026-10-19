@@ -256,6 +256,97 @@ val settingsPatch = bytecodePatch(
             selectable = true
         )
 
+        // Add Advanced Settings Mode Toggle directly below About
+        preferences += SwitchPreference(
+            key = "vista_advanced_settings_mode",
+            titleKey = "vista_advanced_settings_mode_title",
+            summary = true
+        )
+
+        // Populate Sanket's Curated Preferences with essential, easy-to-use controls
+        PreferenceScreen.SANKET_PREFERENCES.addPreferences(
+            PreferenceCategory(
+                titleKey = "morphe_sanket_pref_cat_video_title",
+                sorting = Sorting.UNSORTED,
+                preferences = setOf(
+                    ListPreference(
+                        key = "morphe_video_quality_default_wifi",
+                        entriesKey = "morphe_video_quality_default_entries",
+                        entryValuesKey = "morphe_video_quality_default_entry_values"
+                    ),
+                    ListPreference(
+                        key = "morphe_video_quality_default_mobile",
+                        entriesKey = "morphe_video_quality_default_entries",
+                        entryValuesKey = "morphe_video_quality_default_entry_values"
+                    ),
+                    ListPreference(
+                        key = "morphe_shorts_quality_default_wifi",
+                        entriesKey = "morphe_shorts_quality_default_entries",
+                        entryValuesKey = "morphe_shorts_quality_default_entry_values"
+                    ),
+                    ListPreference(
+                        key = "morphe_shorts_quality_default_mobile",
+                        entriesKey = "morphe_shorts_quality_default_entries",
+                        entryValuesKey = "morphe_shorts_quality_default_entry_values"
+                    ),
+                    SwitchPreference("morphe_remember_video_quality_last_selected", summary = true)
+                )
+            ),
+            PreferenceCategory(
+                titleKey = "morphe_sanket_pref_cat_playback_title",
+                sorting = Sorting.UNSORTED,
+                preferences = setOf(
+                    SwitchPreference("morphe_remove_background_playback_restrictions", summary = false),
+                    ListPreference(
+                        key = "morphe_playback_in_feeds",
+                        tag = "app.morphe.extension.youtube.settings.preference.PlaybackInFeedsListPreference"
+                    ),
+                    SwitchPreference("morphe_custom_speed_menu", summary = true),
+                    SwitchPreference("morphe_remember_playback_speed_last_selected", summary = true)
+                )
+            ),
+            PreferenceCategory(
+                titleKey = "morphe_sanket_pref_cat_player_title",
+                sorting = Sorting.UNSORTED,
+                preferences = setOf(
+                    SwitchPreference("morphe_external_downloader", summary = true),
+                    SwitchPreference("morphe_external_downloader_action_button", summary = true),
+                    TextPreference(
+                        "morphe_external_downloader_name",
+                        tag = "app.morphe.extension.shared.settings.preference.ExternalDownloaderPreference"
+                    ),
+                    SwitchPreference("morphe_copy_video_link_button", summary = true),
+                    SwitchPreference("morphe_loop_video_button", summary = true),
+                    SwitchPreference("morphe_pip_button_overlay", summary = true)
+                )
+            ),
+            PreferenceCategory(
+                titleKey = "morphe_sanket_pref_cat_gestures_title",
+                sorting = Sorting.UNSORTED,
+                preferences = setOf(
+                    ListPreference(
+                        key = "morphe_swipe_left_zone",
+                        entriesKey = "morphe_swipe_zone_action_entries",
+                        entryValuesKey = "morphe_swipe_zone_action_entry_values"
+                    ),
+                    ListPreference(
+                        key = "morphe_swipe_right_zone",
+                        entriesKey = "morphe_swipe_zone_action_entries",
+                        entryValuesKey = "morphe_swipe_zone_action_entry_values"
+                    ),
+                    SwitchPreference("morphe_swipe_press_to_engage", summary = true)
+                )
+            ),
+            PreferenceCategory(
+                titleKey = "morphe_sanket_pref_cat_smart_title",
+                sorting = Sorting.UNSORTED,
+                preferences = setOf(
+                    SwitchPreference("morphe_sb_enabled", summary = true),
+                    SwitchPreference("morphe_ryd_enabled", summary = true)
+                )
+            )
+        )
+
         if (!is_21_30_or_greater) {
             PreferenceScreen.GENERAL.addPreferences(
                 SwitchPreference("morphe_restore_old_settings_menus")
@@ -472,6 +563,14 @@ object PreferenceScreen : BasePreferenceScreen() {
     // Sort screens in the root menu by key, to not scatter related items apart
     // (sorting key is set in morphe_prefs.xml).
     // If no preferences are added to a screen, the screen will not be added to the settings.
+    val SANKET_PREFERENCES = Screen(
+        key = "morphe_settings_screen_00_sanket_preferences",
+        summaryKey = "morphe_settings_screen_00_sanket_preferences_summary",
+        icon = "@drawable/morphe_settings_icon_dynamic",
+        iconBold = "@drawable/morphe_settings_icon_dynamic",
+        layout = "@layout/preference_with_icon",
+        sorting = Sorting.UNSORTED
+    )
     val ADS = Screen(
         key = "morphe_settings_screen_01_ads",
         summaryKey = null,

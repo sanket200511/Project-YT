@@ -54,6 +54,39 @@ public class YouTubePreferenceFragment extends ToolbarPreferenceFragment {
                         SharedYouTubeSettings.CUSTOM_BRANDING_NOTIFICATION_ICON.key,
                         SharedYouTubeSettings.CUSTOM_BRANDING_NAME.key);
             }
+
+            // Filter settings screens based on Advanced Settings Mode toggle
+            boolean isAdvancedMode = app.morphe.extension.youtube.settings.Settings.ADVANCED_SETTINGS_MODE.get();
+            if (!isAdvancedMode) {
+                // Sanket's Preferences Mode: Hide all 12 cluttered advanced screens
+                removePreferences(
+                        "morphe_settings_screen_01_ads",
+                        "morphe_settings_screen_02_dearrow",
+                        "morphe_settings_screen_03_feed",
+                        "morphe_settings_screen_04_general",
+                        "morphe_settings_screen_05_player",
+                        "morphe_settings_screen_06_shorts",
+                        "morphe_settings_screen_07_seekbar",
+                        "morphe_settings_screen_08_swipe_controls",
+                        "morphe_settings_screen_09_return_youtube_dislike",
+                        "morphe_settings_screen_10_sponsorblock",
+                        "morphe_settings_screen_11_misc",
+                        "morphe_settings_screen_12_video"
+                );
+            }
+
+            android.preference.Preference modePref = findPreference("vista_advanced_settings_mode");
+            if (modePref != null) {
+                modePref.setOnPreferenceChangeListener((preference, newValue) -> {
+                    boolean enabled = (Boolean) newValue;
+                    app.morphe.extension.youtube.settings.Settings.ADVANCED_SETTINGS_MODE.save(enabled);
+                    android.app.Activity activity = getActivity();
+                    if (activity != null) {
+                        activity.recreate();
+                    }
+                    return true;
+                });
+            }
         } catch (Exception ex) {
             Logger.printException(() -> "initialize failure", ex);
         }

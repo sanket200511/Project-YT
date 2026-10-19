@@ -19,6 +19,15 @@ Second \"item\" text"</string>
 
     <!-- In languages where "About" is ambiguous, translate this as "About Morphe" (i.e., About this app). -->
     <string name="morphe_settings_screen_00_about_title">About</string>
+    <string name="vista_advanced_settings_mode_title">Advanced Settings Mode</string>
+    <string name="vista_advanced_settings_mode_summary">Toggle ON to show all 12 technical categories. Leave OFF for Sanket\'s curated preferences.</string>
+    <string name="morphe_settings_screen_00_sanket_preferences_title">🌟 Sanket\'s Preferences</string>
+    <string name="morphe_settings_screen_00_sanket_preferences_summary">Essential video quality, playback speed, player controls, gestures &amp; ad-free</string>
+    <string name="morphe_sanket_pref_cat_video_title">Video &amp; Shorts Quality</string>
+    <string name="morphe_sanket_pref_cat_playback_title">Playback &amp; Speed</string>
+    <string name="morphe_sanket_pref_cat_player_title">Player &amp; Download Controls</string>
+    <string name="morphe_sanket_pref_cat_gestures_title">Touch &amp; Swipe Gestures</string>
+    <string name="morphe_sanket_pref_cat_smart_title">Ad-Free &amp; Smart Skipping</string>
     <string name="morphe_settings_screen_01_ads_title">Ads</string>
     <string name="morphe_settings_screen_02_dearrow_title" translatable="false">DeArrow</string>
     <string name="morphe_settings_screen_03_feed_title">Feed</string>
