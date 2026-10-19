@@ -15,6 +15,12 @@ import java.util.Locale;
 
 class MorpheCreditsDialog extends AboutWebViewDialog {
 
+    static final MorpheAboutPreference.WebLink ABOUT_LICENSE = new MorpheAboutPreference.WebLink(
+            "Licenses",
+            "Open source licenses",
+            "https://github.com/sanket200511/Project-YT/blob/main/LICENSE"
+    );
+
     private static final List<MorpheAboutPreference.WebLink> WORKS_LINKS_CURRENT = List.of(
             new MorpheAboutPreference.WebLink("Sanket Kurve",
                     "Lead Developer & Maintainer",
@@ -38,6 +44,7 @@ class MorpheCreditsDialog extends AboutWebViewDialog {
                 .append("</div></div>");
 
         appendContributors(html, "Developer", WORKS_LINKS_CURRENT);
+        appendContributors(html, "Legal", List.of(ABOUT_LICENSE));
 
         html.append(AboutDialogStyle.DOCUMENT_END);
 
