@@ -62,10 +62,20 @@ export default {
         let config = memoryStore.config;
         if (env.VISTA_KV) {
           const raw = await env.VISTA_KV.get("config", { type: "json" });
-          if (raw) config = raw;
-          else await env.VISTA_KV.put("config", JSON.stringify(config));
+          if (raw) {
+            config = raw;
+            memoryStore.config = raw;
+          } else {
+            await env.VISTA_KV.put("config", JSON.stringify(config));
+          }
         }
-        return jsonResponse(config);
+        return new Response(JSON.stringify(config), {
+          status: 200,
+          headers: {
+            ...CORS_HEADERS,
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"
+          }
+        });
       }
 
       // 2. PUBLIC: APK Anonymous Telemetry Ping on Startup
@@ -88,8 +98,10 @@ export default {
           lastSeen: now
         };
 
+        memoryStore.devices[deviceId] = deviceRecord;
+
         if (env.VISTA_KV) {
-          // Store device record
+          // Store device record in persistent KV database
           await env.VISTA_KV.put(`dev:${deviceId}`, JSON.stringify(deviceRecord));
           
           // Update device index list
@@ -100,8 +112,6 @@ export default {
             if (list.length > 2000) list = list.slice(-2000);
             await env.VISTA_KV.put("device_index", JSON.stringify(list));
           }
-        } else {
-          memoryStore.devices[deviceId] = deviceRecord;
         }
 
         return jsonResponse({ status: "acknowledged", timestamp: now });
@@ -154,7 +164,12 @@ export default {
           suspendedCount: suspendedSet.size
         };
 
-        return jsonResponse({ config, stats, devices });
+        return jsonResponse({
+          config,
+          stats,
+          devices,
+          kv_bound: !!env.VISTA_KV
+        });
       }
 
       // 4. ADMIN: Update Config (Killswitch, Min Version, Announcement)
@@ -164,10 +179,10 @@ export default {
         }
 
         const newConfig = await request.json();
+        memoryStore.config = newConfig;
+
         if (env.VISTA_KV) {
           await env.VISTA_KV.put("config", JSON.stringify(newConfig));
-        } else {
-          memoryStore.config = newConfig;
         }
 
         return jsonResponse({ success: true, config: newConfig });

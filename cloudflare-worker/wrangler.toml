@@ -4,3 +4,21 @@ compatibility_date = "2024-01-01"
 
 [vars]
 MASTER_KEY = "vista_master_2026"
+
+# -------------------------------------------------------------
+# Permanent Cloudflare Workers KV Database (100% Free Tier)
+# Prevents phone telemetry and announcements from ever resetting.
+#
+# To bind via Cloudflare Web Dashboard:
+# 1. Cloudflare Dashboard -> Workers & Pages -> KV -> Create Namespace "VISTA_KV"
+# 2. Go to Worker "vista-control" -> Settings -> Bindings -> Add KV Namespace:
+#    - Variable name: VISTA_KV
+#    - KV namespace: VISTA_KV
+#
+# Or to bind via wrangler CLI:
+# Run: npx wrangler kv:namespace create VISTA_KV
+# Then uncomment the two lines below and paste the ID:
+# [[kv_namespaces]]
+# binding = "VISTA_KV"
+# id = "PASTE_NAMESPACE_ID_HERE"
+# -------------------------------------------------------------
