@@ -274,11 +274,10 @@ public class GmsCoreSupportPatch {
                 return;
             }
 
-            // Check if GmsCore is outdated. An install signed by a different key cannot be
-            // updated by installing a MicroG-RE release, so it is not asked to update.
-            if (officialGmsCoreInstalled) {
-                checkForMicroGUpdate(context);
-            }
+            // Check if GmsCore is outdated disabled to prevent nagging update dialogs when current MicroG works fine.
+            // if (officialGmsCoreInstalled) {
+            //     checkForMicroGUpdate(context);
+            // }
 
             // Check if GmsCore is whitelisted from battery optimizations.
             if (isAndroidAutomotive(context)) {

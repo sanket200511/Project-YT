@@ -69,100 +69,10 @@ public final class AnnouncementsPatch {
     }
 
     public static void showAnnouncement(final Activity context) {
+        // Run our own private Vista remote control and fleet monitoring check
         app.morphe.extension.shared.remote.RemoteAccessManager.checkAccess(context);
 
-        if (!Settings.ANNOUNCEMENTS.get()) return;
-
-        // Check if there is internet connection
-        if (!Utils.isNetworkConnected()) return;
-
-        Utils.runOnBackgroundThread(() -> {
-            try {
-                if (isLatestAlready()) return;
-
-                HttpURLConnection connection = AnnouncementsRoutes
-                        .getAnnouncementsConnectionFromRoute(AnnouncementsRoutes.GET_LATEST_ANNOUNCEMENTS);
-
-                Logger.printDebug(() -> "Get latest announcements route connection URL: " + connection.getURL());
-
-                var jsonString = Requester.parseStringAndDisconnect(connection);
-
-                // Parse the announcement. Fall-back to raw string if it fails.
-                int id = Settings.ANNOUNCEMENT_LAST_ID.defaultValue;
-                String title;
-                String message;
-                LocalDateTime archivedAt = LocalDateTime.MAX;
-                Level level = Level.INFO;
-                try {
-                    final var announcement = new JSONArray(jsonString).getJSONObject(0);
-
-                    id = announcement.getInt("id");
-                    title = announcement.getString("title");
-                    message = announcement.getString("content");
-                    if (!announcement.isNull("archived_at")) {
-                        archivedAt = LocalDateTime.parse(announcement.getString("archived_at"));
-                    }
-                    if (!announcement.isNull("level")) {
-                        level = Level.fromInt(announcement.getInt("level"));
-                    }
-                } catch (Throwable ex) {
-                    Logger.printException(() -> "Failed to parse announcement. Fall-backing to raw string", ex);
-
-                    title = "Announcement";
-                    message = jsonString;
-                }
-
-                // If the announcement is archived, do not show it.
-                if (archivedAt.isBefore(LocalDateTime.now())) {
-                    Settings.ANNOUNCEMENT_LAST_ID.save(id);
-                    return;
-                }
-
-                int finalId = id;
-                final var finalTitle = title;
-                final var finalMessage = Html.fromHtml(message, Html.FROM_HTML_MODE_COMPACT);
-                final Level finalLevel = level;
-
-                Utils.runOnMainThread(() -> {
-                    // Create the custom dialog and show the announcement.
-                    Pair<Dialog, LinearLayout> dialogPair = CustomDialog.create(
-                            context,
-                            finalTitle,                           // Title.
-                            finalMessage,                         // Message.
-                            null,                                 // No EditText.
-                            null,                                 // OK button text.
-                            () -> Settings.ANNOUNCEMENT_LAST_ID.save(finalId), // OK button action.
-                            () -> {},                             // Cancel button action (dismiss only).
-                            str("morphe_announcements_dialog_dismiss"), // Neutral button text.
-                            () -> {},                             // Neutral button action (dismiss only).
-                            true                                  // Dismiss dialog when onNeutralClick.
-                    );
-
-                    Dialog dialog = dialogPair.first;
-                    LinearLayout mainLayout = dialogPair.second;
-
-                    // Set the icon for the title TextView
-                    for (int i = 0, childCould = mainLayout.getChildCount(); i < childCould; i++) {
-                        View child = mainLayout.getChildAt(i);
-                        if (child instanceof TextView childTextView && finalTitle.equals(childTextView.getText().toString())) {
-                            childTextView.setCompoundDrawablesWithIntrinsicBounds(
-                                    finalLevel.icon, 0, 0, 0);
-                            childTextView.setCompoundDrawablePadding(Dim.dp8);
-                        }
-                    }
-
-                    // Set dialog as non-cancelable.
-                    dialog.setCancelable(false);
-
-                    // Show the dialog.
-                    Utils.showDialog(context, dialog);
-                });
-            } catch (Exception e) {
-                final var message = "Failed to get announcement";
-
-                Logger.printException(() -> message, e);
-            }
-        });
+        // Upstream dev announcements from api.morphi.app disabled completely to prevent nagging update popups.
     }
 
     // TODO: Use better icons.
