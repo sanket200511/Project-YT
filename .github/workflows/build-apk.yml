@@ -52,21 +52,16 @@ jobs:
           echo "Downloading CLI: $CLI_URL"
           curl -L -o morphe-cli.jar "$CLI_URL"
 
-      - name: Obtain Base YouTube APK from APKMirror
-        if: ${{ !github.event.inputs.apk_url }}
-        uses: Yakov5776/gh-apkmirror-dl@v1.3
-        with:
-          org: 'google-inc'
-          repo: 'youtube'
-          version: ${{ github.event.inputs.version }}
-          bundle: false
-          filename: 'youtube.apk'
-
-      - name: Obtain Base YouTube APK from User URL
-        if: ${{ github.event.inputs.apk_url }}
+      - name: Obtain Base YouTube APK
         run: |
-          echo "Downloading base APK from user URL: ${{ github.event.inputs.apk_url }}"
-          curl -L -o youtube.apk "${{ github.event.inputs.apk_url }}"
+          if [ -n "${{ github.event.inputs.apk_url }}" ]; then
+            echo "Downloading base APK from user URL: ${{ github.event.inputs.apk_url }}"
+            curl -L -o youtube.apk "${{ github.event.inputs.apk_url }}"
+          else
+            echo "Downloading base YouTube APK via automated script (v${{ github.event.inputs.version }})..."
+            python3 -m pip install --upgrade pip beautifulsoup4
+            python3 scripts/download_base.py "${{ github.event.inputs.version }}" youtube.apk
+          fi
 
       - name: Verify Base YouTube APK
         run: |
