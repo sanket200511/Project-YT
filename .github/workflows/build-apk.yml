@@ -59,8 +59,8 @@ jobs:
           org: 'google-inc'
           repo: 'youtube'
           version: ${{ github.event.inputs.version }}
-          bundle: true
-          filename: 'youtube.apkm'
+          bundle: false
+          filename: 'youtube.apk'
 
       - name: Obtain Base YouTube APK from User URL
         if: ${{ github.event.inputs.apk_url }}
