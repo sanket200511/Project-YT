@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'YouTube target version'
+        description: 'YouTube target version (e.g. 21.39.522 or 21.20.405)'
         required: true
-        default: '21.20.405'
+        default: '21.39.522'
       apk_url:
         description: 'Optional direct download URL for base YouTube APK'
         required: false
@@ -52,39 +52,47 @@ jobs:
           echo "Downloading CLI: $CLI_URL"
           curl -L -o morphe-cli.jar "$CLI_URL"
 
-      - name: Obtain Base YouTube APK
+      - name: Obtain Base YouTube APK from APKMirror
+        if: ${{ !github.event.inputs.apk_url }}
+        uses: Yakov5776/gh-apkmirror-dl@v1.3
+        with:
+          org: 'google-inc'
+          repo: 'youtube'
+          version: ${{ github.event.inputs.version }}
+          bundle: true
+          filename: 'youtube.apkm'
+
+      - name: Obtain Base YouTube APK from User URL
+        if: ${{ github.event.inputs.apk_url }}
         run: |
-          if [ -n "${{ github.event.inputs.apk_url }}" ]; then
-            echo "Downloading base APK from user URL: ${{ github.event.inputs.apk_url }}"
-            curl -L -o youtube.apk "${{ github.event.inputs.apk_url }}"
-          else
-            echo "Downloading verified supported YouTube base APK (v21.39.522)..."
-            curl -L -o youtube.apk "https://pool.apk.aptoide.com/bjwawesome/com-google-android-youtube-1561299900-76845135-d2cadaefeaa82540874ad69450c64e14.apk"
-          fi
+          echo "Downloading base APK from user URL: ${{ github.event.inputs.apk_url }}"
+          curl -L -o youtube.apk "${{ github.event.inputs.apk_url }}"
 
       - name: Verify Base YouTube APK
         run: |
-          if [ ! -f youtube.apk ] || [ ! -s youtube.apk ]; then
-            echo "Error: youtube.apk was not created or is empty."
+          INPUT_APP=$(ls youtube.* 2>/dev/null | head -n 1 || true)
+          if [ -z "$INPUT_APP" ] || [ ! -f "$INPUT_APP" ] || [ ! -s "$INPUT_APP" ]; then
+            echo "Error: Base YouTube input was not found or is empty."
             exit 1
           fi
-          FILE_SIZE=$(wc -c < youtube.apk)
-          echo "Base YouTube APK size: $FILE_SIZE bytes"
-          if [ "$FILE_SIZE" -lt 50000000 ]; then
-            echo "Error: Downloaded APK is smaller than 50MB ($FILE_SIZE bytes)."
-            head -n 20 youtube.apk || true
+          FILE_SIZE=$(wc -c < "$INPUT_APP")
+          echo "Base YouTube input ($INPUT_APP) size: $FILE_SIZE bytes"
+          if [ "$FILE_SIZE" -lt 20000000 ]; then
+            echo "Error: Downloaded file is smaller than 20MB ($FILE_SIZE bytes)."
+            head -n 20 "$INPUT_APP" || true
             exit 1
           fi
 
       - name: Patch APK with Vista
         run: |
           PATCH_BUNDLE=$(ls patches/build/libs/patches-*.mpp | head -n 1)
-          echo "Applying patch bundle $PATCH_BUNDLE to youtube.apk..."
+          INPUT_APP=$(ls youtube.* 2>/dev/null | head -n 1)
+          echo "Applying patch bundle $PATCH_BUNDLE to $INPUT_APP..."
           java -jar morphe-cli.jar patch \
             --patches "$PATCH_BUNDLE" \
             --out Vista.apk \
             --force \
-            youtube.apk
+            "$INPUT_APP"
 
       - name: Prepare Vista Services APK
         run: |
