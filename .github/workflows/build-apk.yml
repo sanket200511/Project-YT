@@ -94,14 +94,6 @@ jobs:
           echo "Downloading latest MicroG as Vista-Services.apk..."
           curl -L -o Vista-Services.apk "https://github.com/MorpheApp/MicroG-RE/releases/download/7.2.1/microg-7.2.1.apk"
 
-      - name: Upload APK as Workflow Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Vista-YouTube-APK
-          path: |
-            Vista.apk
-            Vista-Services.apk
-
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
